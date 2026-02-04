@@ -1,0 +1,444 @@
+package com.example.filmRental.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+import java.time.LocalDateTime;
+import java.util.Set;
+
+@Entity
+@Table(name = "category")
+public class Category {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "category_id")
+    private Long categoryId;
+
+    @NotBlank
+    @Size(max = 25)
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "last_update")
+    private LocalDateTime lastUpdate;
+
+    @OneToMany(mappedBy = "category")
+    private Set<FilmCategory> filmCategories;
+
+    public Category() {}
+
+    public Category(String name) {
+        this.name = name;
+        this.lastUpdate = LocalDateTime.now();
+    }
+
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public LocalDateTime getLastUpdate() { return lastUpdate; }
+    public void setLastUpdate(LocalDateTime lastUpdate) { this.lastUpdate = lastUpdate; }
+
+    public Set<FilmCategory> getFilmCategories() { return filmCategories; }
+    public void setFilmCategories(Set<FilmCategory> filmCategories) { this.filmCategories = filmCategories; }
+}
+
+
+package com.example.filmRental.entity;
+
+import java.io.Serializable;
+import java.util.Objects;
+
+public class FilmCategoryId implements Serializable {
+
+    private Long film;
+    private Long category;
+
+    public FilmCategoryId() {}
+
+    public FilmCategoryId(Long film, Long category) {
+        this.film = film;
+        this.category = category;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FilmCategoryId)) return false;
+        FilmCategoryId that = (FilmCategoryId) o;
+        return Objects.equals(film, that.film) &&
+               Objects.equals(category, that.category);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(film, category);
+    }
+}
+
+
+package com.example.filmRental.entity;
+
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "film_category")
+@IdClass(FilmCategoryId.class)
+public class FilmCategory {
+
+    @Id
+    @ManyToOne
+    @JoinColumn(name = "film_id", nullable = false)
+    private Film film;
+
+    @Id
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @Column(name = "last_update")
+    private LocalDateTime lastUpdate;
+
+    public FilmCategory() {}
+
+    public FilmCategory(Film film, Category category) {
+        this.film = film;
+        this.category = category;
+        this.lastUpdate = LocalDateTime.now();
+    }
+
+    public Film getFilm() { return film; }
+    public void setFilm(Film film) { this.film = film; }
+
+    public Category getCategory() { return category; }
+    public void setCategory(Category category) { this.category = category; }
+
+    public LocalDateTime getLastUpdate() { return lastUpdate; }
+    public void setLastUpdate(LocalDateTime lastUpdate) { this.lastUpdate = lastUpdate; }
+}
+
+
+package com.example.filmRental.entity;
+
+import java.io.Serializable;
+import java.util.Objects;
+
+public class FilmActorId implements Serializable {
+
+    private Long film;
+    private Long actor;
+
+    public FilmActorId() {}
+
+    public FilmActorId(Long film, Long actor) {
+        this.film = film;
+        this.actor = actor;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FilmActorId)) return false;
+        FilmActorId that = (FilmActorId) o;
+        return Objects.equals(film, that.film) &&
+               Objects.equals(actor, that.actor);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(film, actor);
+    }
+}
+
+
+package com.example.filmRental.entity;
+
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "film_actor")
+@IdClass(FilmActorId.class)
+public class FilmActor {
+
+    @Id
+    @ManyToOne
+    @JoinColumn(name = "film_id", nullable = false)
+    private Film film;
+
+    @Id
+    @ManyToOne
+    @JoinColumn(name = "actor_id", nullable = false)
+    private Actor actor;
+
+    @Column(name = "last_update")
+    private LocalDateTime lastUpdate;
+
+    public FilmActor() {}
+
+    public FilmActor(Film film, Actor actor) {
+        this.film = film;
+        this.actor = actor;
+        this.lastUpdate = LocalDateTime.now();
+    }
+
+    public Film getFilm() { return film; }
+    public void setFilm(Film film) { this.film = film; }
+
+    public Actor getActor() { return actor; }
+    public void setActor(Actor actor) { this.actor = actor; }
+
+    public LocalDateTime getLastUpdate() { return lastUpdate; }
+    public void setLastUpdate(LocalDateTime lastUpdate) { this.lastUpdate = lastUpdate; }
+}
+
+
+public interface CategoryRepository extends JpaRepository<Category, Long> {
+    List<Category> findByName(String name);
+}
+
+public interface FilmCategoryRepository extends JpaRepository<FilmCategory, FilmCategoryId> {
+    List<FilmCategory> findByCategory_CategoryId(Long categoryId);
+}
+
+public interface FilmActorRepository extends JpaRepository<FilmActor, FilmActorId> {
+    List<FilmActor> findByFilm_FilmId(Long filmId);
+}
+
+
+package com.example.filmRental.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+
+public class CategoryRequestDTO {
+
+    @NotBlank
+    private String name;
+
+    public CategoryRequestDTO() {}
+
+    public CategoryRequestDTO(String name) {
+        this.name = name;
+    }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+}
+
+
+package com.example.filmRental.dto.response;
+
+public class CategoryResponseDTO {
+
+    private Long categoryId;
+    private String name;
+
+    public CategoryResponseDTO(Long categoryId, String name) {
+        this.categoryId = categoryId;
+        this.name = name;
+    }
+
+    public Long getCategoryId() { return categoryId; }
+    public String getName() { return name; }
+}
+
+
+package com.example.filmRental.service;
+
+import com.example.filmRental.dto.request.CategoryRequestDTO;
+import com.example.filmRental.dto.response.CategoryResponseDTO;
+import com.example.filmRental.entity.Film;
+
+import java.util.List;
+
+public interface CategoryService {
+
+    String createCategory(CategoryRequestDTO dto);
+
+    List<CategoryResponseDTO> getCategoryByName(String name);
+
+    List<Film> getFilmsByCategoryName(String category);
+}
+
+
+package com.example.filmRental.service;
+
+public interface FilmCategoryService {
+
+    String updateFilmCategory(Long filmId, Long categoryId);
+}
+
+
+package com.example.filmRental.service;
+
+import com.example.filmRental.entity.Actor;
+
+import java.util.List;
+
+public interface FilmActorService {
+
+    String assignActorToFilm(Long filmId, Long actorId);
+
+    List<Actor> getActorsByFilm(Long filmId);
+}
+
+
+@Service
+public class CategoryServiceImpl implements CategoryService {
+
+    private final CategoryRepository categoryRepo;
+    private final FilmCategoryRepository filmCategoryRepo;
+
+    public CategoryServiceImpl(CategoryRepository c, FilmCategoryRepository fc) {
+        this.categoryRepo = c;
+        this.filmCategoryRepo = fc;
+    }
+
+    @Override
+    public String createCategory(CategoryRequestDTO dto) {
+        Category category = new Category(dto.getName());
+        categoryRepo.save(category);
+        return "Record Created Successfully";
+    }
+
+    @Override
+    public List<CategoryResponseDTO> getCategoryByName(String name) {
+        return categoryRepo.findByName(name)
+                .stream()
+                .map(c -> new CategoryResponseDTO(c.getCategoryId(), c.getName()))
+                .toList();
+    }
+
+    @Override
+    public List<Film> getFilmsByCategoryName(String category) {
+        return filmCategoryRepo.findByCategory_Name(category)
+                .stream()
+                .map(FilmCategory::getFilm)
+                .toList();
+    }
+}
+
+
+@Service
+public class FilmCategoryServiceImpl implements FilmCategoryService {
+
+    private final FilmRepository filmRepo;
+    private final CategoryRepository categoryRepo;
+    private final FilmCategoryRepository filmCategoryRepo;
+
+    public FilmCategoryServiceImpl(FilmRepository f, CategoryRepository c, FilmCategoryRepository fc) {
+        this.filmRepo = f;
+        this.categoryRepo = c;
+        this.filmCategoryRepo = fc;
+    }
+
+    @Override
+    public String updateFilmCategory(Long filmId, Long categoryId) {
+        Film film = filmRepo.findById(filmId).orElseThrow();
+        Category category = categoryRepo.findById(categoryId).orElseThrow();
+
+        filmCategoryRepo.save(new FilmCategory(film, category));
+        return "Film Category Updated Successfully";
+    }
+}
+
+
+@Service
+public class FilmActorServiceImpl implements FilmActorService {
+
+    private final FilmRepository filmRepo;
+    private final ActorRepository actorRepo;
+    private final FilmActorRepository filmActorRepo;
+
+    public FilmActorServiceImpl(FilmRepository f, ActorRepository a, FilmActorRepository fa) {
+        this.filmRepo = f;
+        this.actorRepo = a;
+        this.filmActorRepo = fa;
+    }
+
+    @Override
+    public String assignActorToFilm(Long filmId, Long actorId) {
+        Film film = filmRepo.findById(filmId).orElseThrow();
+        Actor actor = actorRepo.findById(actorId).orElseThrow();
+
+        filmActorRepo.save(new FilmActor(film, actor));
+        return "Actor Assigned to Film Successfully";
+    }
+
+    @Override
+    public List<Actor> getActorsByFilm(Long filmId) {
+        return filmActorRepo.findByFilm_FilmId(filmId)
+                .stream()
+                .map(FilmActor::getActor)
+                .toList();
+    }
+}
+
+
+@RestController
+@RequestMapping("/api/categories")
+public class CategoryController {
+
+    private final CategoryService service;
+
+    public CategoryController(CategoryService service) {
+        this.service = service;
+    }
+
+    @PostMapping("/post")
+    public String create(@RequestBody CategoryRequestDTO dto) {
+        return service.createCategory(dto);
+    }
+}
+
+
+@RestController
+@RequestMapping("/api/films")
+public class FilmCategoryController {
+
+    private final FilmCategoryService service;
+
+    public FilmCategoryController(FilmCategoryService service) {
+        this.service = service;
+    }
+
+    @PutMapping("/update/category/{filmId}")
+    public String updateCategory(
+            @PathVariable Long filmId,
+            @RequestParam Long categoryId) {
+        return service.updateFilmCategory(filmId, categoryId);
+    }
+}
+
+
+@RestController
+@RequestMapping("/api/films")
+public class FilmActorController {
+
+    private final FilmActorService service;
+
+    public FilmActorController(FilmActorService service) {
+        this.service = service;
+    }
+
+    @PutMapping("/{id}/actor")
+    public String assignActor(
+            @PathVariable Long id,
+            @RequestParam Long actorId) {
+        return service.assignActorToFilm(id, actorId);
+    }
+
+    @GetMapping("/{id}/actors")
+    public List<Actor> getActors(@PathVariable Long id) {
+        return service.getActorsByFilm(id);
+    }
+}
+
+
